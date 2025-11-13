@@ -7,3 +7,5 @@ Esta app es una calculadora de disntitos tipos de inventarios
 4.Inventarios Probabilisticos
 
 Este proyecto puede llegar a tener errores :D
+
+Los archivos fuera de la carpeta Proyecto no deberia existir (no se como eliminarlos de github)
