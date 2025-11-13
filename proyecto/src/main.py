@@ -1,5 +1,5 @@
 import flet as ft
-from menu_principal import Menu_principal
+from proyecto.src.assets.menu_principal import Menu_principal, Menu_principaldew
 
 def main(page: ft.Page):
     # configura la página
