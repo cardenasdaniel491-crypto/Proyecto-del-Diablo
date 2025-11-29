@@ -1,78 +1,233 @@
 import flet as ft
 import formulario 
 
-class Modelo_compra(ft.Column):
+class Modelo_compra(ft.Container):
+    """
+    MODELO DE COMPRA ECONÓMICA (EOQ)
+    Interfaz simplificada y funcional
+    """
+    
     def __init__(self, page):
         super().__init__()
         self.page = page
+        self.bgcolor = ft.Colors.BLUE_GREY_50
+        self.expand = True
+        
+        # CAMPOS DE ENTRADA
+        self.demanda_field = ft.TextField(
+            label="Demanda Anual (D)", 
+            value="1000", 
+            width=200
+        )
+        self.costo_pedido_field = ft.TextField(
+            label="Costo por Pedido (S)", 
+            value="50", 
+            width=200
+        )
+        self.dias_field = ft.TextField(
+            label="Días Laborales", 
+            value="365", 
+            width=200
+        )
+        self.costo_mantenimiento_field = ft.TextField(
+            label="Costo Mantenimiento (H)", 
+            value="2", 
+            width=200
+        )
+        
+        # OPCIÓN CALCULAR H
+        self.calcular_h_checkbox = ft.Checkbox(
+            label="Calcular H automáticamente", 
+            value=False,
+            on_change=self.toggle_calculo_h
+        )
+        self.costo_unitario_field = ft.TextField(
+            label="Costo Unitario (C)", 
+            value="10", 
+            width=200, 
+            visible=False
+        )
+        self.tasa_mantenimiento_field = ft.TextField(
+            label="Tasa Mantenimiento (%)", 
+            value="20", 
+            width=200, 
+            visible=False
+        )
 
-        # campos de entrada para los parámetros del modelo de compra
-        self.demanda_field = ft.TextField(label="Demanda (D)", width=200)
-        self.costo_pedido_field = ft.TextField(label="Costo por pedido (S)", width=200)
-        self.dias_field = ft.TextField(label="Días trabajados", width=200)
-        self.costo_mantenimiento_field = ft.TextField(label="Costo Mantenimiento (H)", width=200)
-
-        # resultados 
-        self.q_restultado = ft.Text("", size=16, weight=ft.FontWeight.BOLD)
-        self.cta_resultado = ft.Text("", size=16, weight=ft.FontWeight.BOLD)
-        self.ctu_resultado = ft.Text("", size=16, weight=ft.FontWeight.BOLD)    
+        # RESULTADOS
+        self.q_resultado = ft.Text("0.00", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_700)
+        self.cta_resultado = ft.Text("0.00", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_700)
+        self.ctu_resultado = ft.Text("0.00", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_700)
 
         self.build_ui()
 
-        def build_ui(self):
-            self.controls = [
-            ft.Row([
-                ft.Text("MODELO DE COMPRA", size=24, weight=ft.FontWeight.BOLD),
-                ft.IconButton(icon=ft.icons.ARROW_BACK, on_click=self.volver_menu)
-            ]),
-            ft.Container(height=20),
-            
-            ft.Row([
-                ft.Column([
-                    self.demanda_field,
-                    self.costo_pedido_field,
-                    self.dias_field,
-                    self.costo_mantenimiento_field,
-                ]),
-            ]),
-            
-            ft.Container(height=20),
-            
-            ft.ElevatedButton("Calcular", on_click=self.calcular,
-                             style=ft.ButtonStyle(bgcolor=ft.Colors.CYAN_100)),
-            
-            ft.Container(height=20),
-            
-            ft.Column([
-                ft.Row([ft.Text("Cantidad potima del lote (Q):"), self.q_result]),
-                ft.Row([ft.Text("Costo Total Anual(CTA):"), self.cta_result]),
-                ft.Row([ft.Text("Costo Total Unitario(CTU):"), self.ctu_result]),
-            ]),
-        ]
-            
+    def toggle_calculo_h(self, e):
+        """Activa/desactiva cálculo de H"""
+        self.costo_mantenimiento_field.visible = not self.calcular_h_checkbox.value
+        self.costo_unitario_field.visible = self.calcular_h_checkbox.value
+        self.tasa_mantenimiento_field.visible = self.calcular_h_checkbox.value
+        self.update()
+
+    def build_ui(self):
+        """CONSTRUYE INTERFAZ CON SCROLL"""
+        self.content = ft.Column(
+            [
+                # ENCABEZADO
+                ft.Container(
+                    content=ft.Row([
+                        ft.Text("MODELO DE COMPRA ECONÓMICA", 
+                               size=20, 
+                               weight=ft.FontWeight.BOLD, 
+                               color=ft.Colors.BLUE_700),
+                        ft.IconButton(
+                            icon=ft.Icons.ARROW_BACK, 
+                            icon_color=ft.Colors.BLUE_700,
+                            on_click=self.volver_menu
+                        )
+                    ]),
+                    padding=15,
+                    bgcolor=ft.Colors.BLUE_50
+                ),
+                
+                # PANEL DE PARÁMETROS
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column([
+                            ft.Text("Parámetros del Sistema", 
+                                   size=16, 
+                                   weight=ft.FontWeight.BOLD),
+                            
+                            ft.ResponsiveRow([
+                                ft.Column([self.demanda_field], col=6),
+                                ft.Column([self.costo_pedido_field], col=6),
+                            ]),
+                            
+                            ft.ResponsiveRow([
+                                ft.Column([self.dias_field], col=6),
+                                ft.Column([self.costo_mantenimiento_field], col=6),
+                            ]),
+                            
+                            # OPCIÓN CALCULAR H
+                            ft.Container(
+                                content=ft.Column([
+                                    self.calcular_h_checkbox,
+                                    ft.ResponsiveRow([
+                                        ft.Column([self.costo_unitario_field], col=6),
+                                        ft.Column([self.tasa_mantenimiento_field], col=6),
+                                    ]),
+                                ]),
+                                padding=10,
+                                bgcolor=ft.Colors.BLUE_100,
+                                border_radius=8
+                            ),
+                            
+                            # BOTÓN DE CÁLCULO
+                            ft.Container(
+                                content=ft.ElevatedButton(
+                                    "CALCULAR MODELO",
+                                    on_click=self.calcular,
+                                    style=ft.ButtonStyle(
+                                        bgcolor=ft.Colors.BLUE_400,
+                                        color=ft.Colors.WHITE,
+                                        padding=20
+                                    ),
+                                    icon=ft.Icons.CALCULATE
+                                ),
+                                padding=20,
+                                alignment=ft.alignment.center
+                            )
+                        ], spacing=15),
+                        padding=20
+                    ),
+                    margin=10
+                ),
+                
+                # PANEL DE RESULTADOS
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column([
+                            ft.Text("Resultados del Modelo", 
+                                   size=16, 
+                                   weight=ft.FontWeight.BOLD),
+                            
+                            ft.Container(
+                                content=ft.Column([
+                                    ft.Row([
+                                        ft.Text("Cantidad óptima (Q):", 
+                                               size=14,
+                                               weight=ft.FontWeight.W_500),
+                                        self.q_resultado
+                                    ]),
+                                    ft.Row([
+                                        ft.Text("Costo Total Anual (CTA):", 
+                                               size=14,
+                                               weight=ft.FontWeight.W_500),
+                                        self.cta_resultado
+                                    ]),
+                                    ft.Row([
+                                        ft.Text("Costo Total Unitario (CTU):", 
+                                               size=14,
+                                               weight=ft.FontWeight.W_500),
+                                        self.ctu_resultado
+                                    ]),
+                                ], spacing=15),
+                                padding=20
+                            )
+                        ]),
+                        padding=20
+                    ),
+                    margin=10
+                ),
+                
+                # ESPACIO FINAL PARA SCROLL
+                ft.Container(height=50)
+            ],
+            scroll=ft.ScrollMode.ADAPTIVE,  # SCROLL HABILITADO
+            expand=True
+        )
+
     def calcular(self, e):
+        """MÉTODO DE CÁLCULO"""
         try:
-            D = float(self.demanda_field.value)
-            S = float(self.costo_pedido_field.value)
-            H = float(self.costo_mantenimiento_field.value)
-            dias = float(self.dias_field.value)
+            # VALIDAR ENTRADAS
+            D = formulario.validar_entrada(self.demanda_field.value, "Demanda", 1)
+            S = formulario.validar_entrada(self.costo_pedido_field.value, "Costo pedido", 0.01)
+            dias = formulario.validar_entrada(self.dias_field.value, "Días laborales", 1, 365)
+            
+            # CALCULAR O OBTENER H
+            if self.calcular_h_checkbox.value:
+                C = formulario.validar_entrada(self.costo_unitario_field.value, "Costo unitario", 0.01)
+                I = formulario.validar_entrada(self.tasa_mantenimiento_field.value, "Tasa mantenimiento", 0, 100)
+                H = formulario.calcular_costo_mantenimiento(C, I)
+            else:
+                H = formulario.validar_entrada(self.costo_mantenimiento_field.value, "Costo mantenimiento", 0.01)
 
-            Q = formulario.calcular_q_optima(D, S, H)
-            CTU = formulario.calcular_ctu(CTA, D)
-            CTA = formulario.calcular_cta(D, S, H, Q)
+            # REALIZAR CÁLCULOS
+            Q = formulario.Q(D, S, H, 0, 1)
+            d = formulario.ConvD(D, dias, 1)
+            CTA = formulario.calcular_CTA(D, Q, S, H, 1)
+            CTU = (d / Q) * S + (Q / 2) * (H / dias)
 
+            # ACTUALIZAR RESULTADOS
             self.q_resultado.value = f"{Q:.2f}"
             self.cta_resultado.value = f"${CTA:.2f}"
             self.ctu_resultado.value = f"${CTU:.2f}"
-        except ValueError:
-            self.q_restultado.value = "Error en los datos ingresados"
-            self.cta_resultado.value = "Error en los datos ingresados"
-            self.ctu_resultado.value = "Error en los datos ingresados"
-        self.page.update()
+            self.update()
+            
+        except ValueError as ve:
+            self.mostrar_error(str(ve))
 
-        def volver_menu(self, e):
-            from menu_principal import Menu_principal
-            self.page.controls.clean()
-            menu = Menu_principal(self.page)
-            self.page.add(menu)
-            self.page.update()
+    def mostrar_error(self, mensaje):
+        """MUESTRA ERRORES"""
+        self.page.show_snack_bar(ft.SnackBar(
+            content=ft.Text(mensaje),
+            duration=3000
+        ))
+
+    def volver_menu(self, e):
+        """REGRESA AL MENÚ"""
+        from menu_principal import Menu_principal
+        self.page.clean()
+        menu = Menu_principal(self.page)
+        self.page.add(menu)
+        self.page.update()

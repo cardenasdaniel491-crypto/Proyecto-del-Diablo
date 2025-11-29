@@ -1,100 +1,209 @@
-import flet as ft 
+import flet as ft
 import formulario
 
-class Modelo_produccion(ft.Column):
-    def __init__(self, page):   
+class Modelo_produccion(ft.Container):
+    """
+    MODELO DE PRODUCCIÓN INTERNA
+    Lote económico de producción con tasa finita
+    """
+    
+    def __init__(self, page):
         super().__init__()
         self.page = page
+        self.bgcolor = ft.Colors.BLUE_GREY_50
+        self.expand = True
 
-        # campos de entrada para los parámetros del modelo de producción
-        self.s_field = ft.TextField(label="Costo de produccion (S)", width=200)
-        self.d_field = ft.TextField(label="Demanda (D)", width=200)
-        self.h_field = ft.TextField(label="Costo de Mantenimiento (H)", width=200)
-        self.t_field = ft.TextField(label="Dias trabajados", width=200)
-        self.a_field = ft.TextField(label="Tasa de produccion (A)", width=200)
+        # CAMPOS DE ENTRADA
+        self.s_field = ft.TextField(
+            label="Costo Preparación (S)", 
+            value="100", 
+            width=200
+        )
+        self.d_field = ft.TextField(
+            label="Demanda Anual (D)", 
+            value="1000", 
+            width=200
+        )
+        self.h_field = ft.TextField(
+            label="Costo Mantenimiento (H)", 
+            value="2", 
+            width=200
+        )
+        self.a_field = ft.TextField(
+            label="Tasa Producción (a)", 
+            value="5000", 
+            width=200
+        )
 
-        self.q_resultado = ft.Text("0", size=16, weight=ft.FontWeight.BOLD)
-        self.sm_resultado = ft.Text("0", size=16, weight=ft.FontWeight.BOLD)
-        self.cta_resultado = ft.Text("0", size=16, weight=ft.FontWeight.BOLD)
-        self.ctu_resultado = ft.Text("0", size=16, weight=ft.FontWeight.BOLD)
-        self.t1_resultado = ft.Text("0", size=16, weight=ft.FontWeight.BOLD)
+        # RESULTADOS
+        self.q_resultado = ft.Text("0.00", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_700)
+        self.sm_resultado = ft.Text("0.00", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_700)
+        self.cta_resultado = ft.Text("0.00", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_700)
+        self.n_resultado = ft.Text("0.00", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_700)
+
         self.build_ui()
 
     def build_ui(self):
-        self.controls = [
-            ft.Row([
-                ft.Text("MODELO DE PRODUCCIÓN", size=24, weight=ft.FontWeight.BOLD),
-                ft.IconButton(icon=ft.icons.ARROW_BACK, on_click=self.volver_menu)
-            ]),
-            ft.Container(height=20),
-            
-            ft.Row([
-                ft.Column([self.s_field, self.d_field, self.h_field]),
-                ft.Column([self.t_field, self.a_field])
-            ]),
-            
-            ft.Container(height=20),
-            
-            ft.Row([
-                ft.ElevatedButton("Calcular", on_click=self.calcular,
-                                 style=ft.ButtonStyle(bgcolor=ft.Colors.BLUE_100)),
-                ft.ElevatedButton("Limpiar", on_click=self.limpiar,
-                                 style=ft.ButtonStyle(bgcolor=ft.Colors.BLUE_100))
-            ]),
-            
-            ft.Container(height=20),
-            
-            ft.Column([
-                ft.Row([ft.Text("Lote econonico (Q):"), self.q_result]),
-                ft.Row([ft.Text("Inventario maximo (Sm):"), self.sm_result]),
-                ft.Row([ft.Text("Costo Total Anual(CTU):"), self.cta_result]),
-                ft.Row([ft.Text("Tiempo producción (t1):"), self.t1_result]),
-            ]),
-        ]
+        """INTERFAZ CON SCROLL"""
+        self.content = ft.Column(
+            [
+                # ENCABEZADO
+                ft.Container(
+                    content=ft.Row([
+                        ft.Text("MODELO DE PRODUCCIÓN INTERNA", 
+                               size=20, 
+                               weight=ft.FontWeight.BOLD, 
+                               color=ft.Colors.GREEN_700),
+                        ft.IconButton(
+                            icon=ft.Icons.ARROW_BACK, 
+                            icon_color=ft.Colors.GREEN_700,
+                            on_click=self.volver_menu
+                        )
+                    ]),
+                    padding=15,
+                    bgcolor=ft.Colors.GREEN_50
+                ),
+                
+                # PANEL DE PARÁMETROS
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column([
+                            ft.Text("Parámetros del Sistema", 
+                                   size=16, 
+                                   weight=ft.FontWeight.BOLD),
+                            
+                            ft.ResponsiveRow([
+                                ft.Column([self.s_field], col=6),
+                                ft.Column([self.d_field], col=6),
+                            ]),
+                            
+                            ft.ResponsiveRow([
+                                ft.Column([self.h_field], col=6),
+                                ft.Column([self.a_field], col=6),
+                            ]),
+                            
+                            # INFORMACIÓN ADICIONAL
+                            ft.Container(
+                                content=ft.Column([
+                                    ft.Text("Condición del modelo:", size=12, weight=ft.FontWeight.BOLD),
+                                    ft.Text("La tasa de producción (a) debe ser mayor que la demanda (D)", 
+                                           size=10, 
+                                           color=ft.Colors.GREY_600),
+                                ]),
+                                padding=10,
+                                bgcolor=ft.Colors.BLUE_50,
+                                border_radius=8
+                            ),
+                            
+                            # BOTÓN DE CÁLCULO
+                            ft.Container(
+                                content=ft.ElevatedButton(
+                                    "CALCULAR PRODUCCIÓN",
+                                    on_click=self.calcular,
+                                    style=ft.ButtonStyle(
+                                        bgcolor=ft.Colors.GREEN_400,
+                                        color=ft.Colors.WHITE,
+                                        padding=20
+                                    ),
+                                    icon=ft.Icons.CALCULATE
+                                ),
+                                padding=20,
+                                alignment=ft.alignment.center
+                            )
+                        ], spacing=15),
+                        padding=20
+                    ),
+                    margin=10
+                ),
+                
+                # PANEL DE RESULTADOS
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column([
+                            ft.Text("Resultados del Modelo", 
+                                   size=16, 
+                                   weight=ft.FontWeight.BOLD),
+                            
+                            ft.Container(
+                                content=ft.Column([
+                                    ft.Row([
+                                        ft.Text("Lote Producción (Q):", 
+                                               size=14,
+                                               weight=ft.FontWeight.W_500),
+                                        self.q_resultado
+                                    ]),
+                                    ft.Row([
+                                        ft.Text("Inventario Máximo (Sm):", 
+                                               size=14,
+                                               weight=ft.FontWeight.W_500),
+                                        self.sm_resultado
+                                    ]),
+                                    ft.Row([
+                                        ft.Text("Costo Total Anual (CTA):", 
+                                               size=14,
+                                               weight=ft.FontWeight.W_500),
+                                        self.cta_resultado
+                                    ]),
+                                    ft.Row([
+                                        ft.Text("Corridas por Año (N):", 
+                                               size=14,
+                                               weight=ft.FontWeight.W_500),
+                                        self.n_resultado
+                                    ]),
+                                ], spacing=15),
+                                padding=20
+                            )
+                        ]),
+                        padding=20
+                    ),
+                    margin=10
+                ),
+                
+                # ESPACIO FINAL
+                ft.Container(height=50)
+            ],
+            scroll=ft.ScrollMode.ADAPTIVE,  # SCROLL HABILITADO
+            expand=True
+        )
 
     def calcular(self, e):
+        """MÉTODO DE CÁLCULO"""
         try:
-            S = float(self.s_field.value)
-            D = float(self.d_field.value)
-            H = float(self.h_field.value)
-            t = float(self.t_field.value)
-            A = float(self.a_field.value)
+            # VALIDAR ENTRADAS
+            S = formulario.validar_entrada(self.s_field.value, "Costo preparación", 0.01)
+            D = formulario.validar_entrada(self.d_field.value, "Demanda", 1)
+            H = formulario.validar_entrada(self.h_field.value, "Costo mantenimiento", 0.01)
+            a = formulario.validar_entrada(self.a_field.value, "Tasa producción", 1)
+
+            # VALIDAR CONDICIÓN a > D
+            if a <= D:
+                raise ValueError("La tasa producción (a) debe ser mayor que la demanda (D)")
+
+            # REALIZAR CÁLCULOS
+            Q = formulario.Q(D, S, H, a, 3)
+            Sm = formulario.Sm(Q, D, a, 2)
+            N = D / Q  # Número de corridas
+            CTA = formulario.calcular_CTA(D, Q, S, H, 3, a=a)
+
+            # ACTUALIZAR RESULTADOS
+            self.q_resultado.value = f"{Q:.2f}"
+            self.sm_resultado.value = f"{Sm:.2f}"
+            self.cta_resultado.value = f"${CTA:.2f}"
+            self.n_resultado.value = f"{N:.2f}"
+            self.update()
             
-            Q = formulario.Q(D, S, H, A, 3) 
-            Sm = formulario.Sm(Q, D, A, S, H, 2)  
-            t1 = formulario.t1(Q, D, A, 2)  
-            
-            # se calcula el costo total anual
-            CTA = (D / Q) * S + H * (Sm / 2)
-            
-            self.q_result.value = f"{Q:.2f}"
-            self.sm_result.value = f"{Sm:.2f}"
-            self.cta_result.value = f"{CTA:.2f}"
-            self.t1_result.value = f"{t1:.2f}"
-            
-        except ValueError:
-            self.q_result.value = "Error en los datos ingresados"
-            self.sm_result.value = "Error en los datos ingresados"
-            self.cta_result.value = "Error en los datos ingresados"
-            self.t1_result.value = "Error en los datos ingresados"
-        
-        self.page.update()
-    
-    def limpiar(self, e):
-        self.s_field.value = ""
-        self.d_field.value = ""
-        self.h_field.value = ""
-        self.t_field.value = ""
-        self.a_field.value = ""
-        self.q_result.value = "0"
-        self.sm_result.value = "0"
-        self.cta_result.value = "0"
-        self.t1_result.value = "0"
-        self.page.update()
-    
+        except ValueError as ve:
+            self.mostrar_error(str(ve))
+
+    def mostrar_error(self, mensaje):
+        self.page.show_snack_bar(ft.SnackBar(
+            content=ft.Text(mensaje),
+            duration=3000
+        ))
+
     def volver_menu(self, e):
-        from menu_principal import MenuPrincipal
+        from menu_principal import Menu_principal
         self.page.clean()
-        menu = MenuPrincipal(self.page)
+        menu = Menu_principal(self.page)
         self.page.add(menu)
         self.page.update()

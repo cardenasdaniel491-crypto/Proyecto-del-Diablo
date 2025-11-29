@@ -1,14 +1,19 @@
 import flet as ft
-from proyecto.src.assets.menu_principal import Menu_principal, Menu_principaldew
+from menu_principal import Menu_principal
 
 def main(page: ft.Page):
-    # configura la página
+    """
+    FUNCIÓN PRINCIPAL DE LA APLICACIÓN
+    """
+    # CONFIGURACIÓN DE LA PÁGINA
     page.title = "Sistema de Modelos de Inventario"
-    page.window.width = 650
-    page.window.height = 500
+    page.window.width = 1200
+    page.window.height = 800
+    page.window.min_width = 800
+    page.window.min_height = 600
     page.window.center()
     
-    # muestra el menú principal
+    # MOSTRAR MENÚ PRINCIPAL
     menu = Menu_principal(page)
     page.add(menu)
     page.update()

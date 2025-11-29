@@ -1,94 +1,82 @@
 import math
 
-def H (c,I): #Costo de mantenimiento de inventario
-    H = c * I
-    return H
-
-def ConvH (H,n,op): #Conversion de H a h y viceversa
-    if op == 1: #De H a h
-        ConvH = H / n
-    elif op == 2: #De h a H
-        ConvH = H * n
-    return ConvH
-
-def ConvD (D,n,op): #Conversion de D a d y viceversa
-    if op == 1: #De D a d
-        ConvD = D / n
-    elif op == 2: #De d a D
-        ConvD = D * n
-    return ConvD
-
-def ConvA (a,n,op): #Conversion de ca o a a anual y viceversa
-    if op == 1: #De A a a
-        ConvA = a / n
-    elif op == 2: #De a a A
-        ConvA = a * n
-    return ConvA
-
-def Q (D,S,H,a,op): #Cantidad Optima de Pedido
-    if op == 1: #General
-        arriba = 2 * D * S
-        division = arriba / H
-        Q = math.sqrt(division)
-    elif op == 2: #Con escacez
-        arriba = 2 * D * S * (H + a)
-        abajo = H * a
-        division = arriba / abajo
-        Q = math.sqrt(division)
-    elif op == 3: #Con produccion
-        arriba = 2 * D * S
-        abajo = H * (1 - (D / a))
-        division = arriba / abajo
-        Q = math.sqrt(division)
-    return Q
-
-def n(L,t):
-    num = L/t
-    n = math.floor(num) #para redondear hacia abajo
-    return n
-
-def PR(L,D,t,n,op): #Punto de reorden
-    if op == 1: #General
-        if L < t:
-            PR = L * D
-        elif L > t:
-            PR = (L - n * t) * D
+def Q(D, S, H, a, modelo):
+    """
+    Calcula la cantidad económica de pedido
+    modelo: 1=EOQ básico, 2=Con escasez, 3=Producción
+    """
+    try:
+        if modelo == 1:  # EOQ básico
+            return math.sqrt((2 * D * S) / H)
+        elif modelo == 2:  # Con escasez
+            return math.sqrt((2 * D * S * (H + a)) / (H * a))
+        elif modelo == 3:  # Producción
+            return math.sqrt((2 * D * S) / (H * (1 - D/a)))
         else:
-            PR = 0    
-    elif op == 2: #Probabilistico
-        PR = (L * D) + t # t = B
-    return PR
+            raise ValueError("Modelo no válido")
+    except Exception as e:
+        raise ValueError(f"Error en cálculo de Q: {str(e)}")
 
-def Sm (Q,D,a,S,H,op):
-    if op == 1: #Con escacez
-        arriba = 2 * S * D * a
-        abajo = H * (H + a)
-        division = arriba / abajo
-        Sm = math.sqrt(division)
-    elif op == 2: #Con produccion
-        Sm = Q * (1 - (D / a))
-    return Sm
+def Sm(Q, D, S, H, a, modelo):
+    """
+    Calcula el inventario máximo
+    modelo: 1=Con escasez, 2=Producción
+    """
+    try:
+        if modelo == 1:  # Con escasez
+            return math.sqrt((2 * D * S * a) / (H * (H + a)))
+        elif modelo == 2:  # Producción
+            return Q * (1 - D/a)
+        else:
+            raise ValueError("Modelo no válido")
+    except Exception as e:
+        raise ValueError(f"Error en cálculo de Sm: {str(e)}")
 
-def t1 (Q,D,a,op): #Tiempo de produccion
-    if op == 1: #Sin produccion
-        t1 = Q / D
-    elif op == 2: #Con produccion
-        t1 = Q / a
-    return t1
+def calcular_CTA(D, Q, S, H, modelo, **kwargs):
+    """
+    Calcula Costo Total Anual
+    """
+    try:
+        if modelo == 1:  # EOQ básico
+            return (D / Q) * S + (Q / 2) * H
+        elif modelo == 2:  # Con escasez
+            Sm_val = kwargs.get('Sm')
+            return (D / Q) * S + H * (Sm_val / 2)
+        elif modelo == 3:  # Producción
+            a = kwargs.get('a')
+            return ((D * S) / Q) + (Q / 2) * (1 - D/a) * H
+        else:
+            raise ValueError("Modelo no válido")
+    except Exception as e:
+        raise ValueError(f"Error en cálculo de CTA: {str(e)}")
 
-def t2 (Sm,D): 
-    t2 = Sm / D
-    return t2
+def ConvD(D, dias, tipo):
+    """Conversión de unidades de demanda"""
+    try:
+        if tipo == 1:  # Anual a diaria
+            return D / dias
+        elif tipo == 2:  # Diaria a anual
+            return D * dias
+        else:
+            raise ValueError("Tipo de conversión no válido")
+    except Exception as e:
+        raise ValueError(f"Error en conversión: {str(e)}")
 
-def InvProm (Q,D,H,a,op): #Costo de Mtt de Inventario Promedio
-    if op == 1: #General
-        InvProm = (Q / 2) * (H)
-    elif op == 2: #Con escacez
-        Arriba = Q * (1 - (a / D)) # a = Sm
-        Abajo = 2
-        InvProm = (Arriba / Abajo) * H
-    elif op == 3: #Con produccion
-        Arriba = Q * (1 - (D / a))
-        Abajo = 2
-        InvProm = (Arriba / Abajo) * H
-    return InvProm
+def calcular_costo_mantenimiento(C, I):
+    """Calcula H a partir de C e I"""
+    try:
+        return C * (I / 100)
+    except Exception as e:
+        raise ValueError(f"Error en cálculo de H: {str(e)}")
+
+def validar_entrada(valor, nombre, minimo=0, maximo=float('inf')):
+    """Valida entradas numéricas"""
+    try:
+        valor_float = float(valor)
+        if valor_float < minimo:
+            raise ValueError(f"{nombre} debe ser ≥ {minimo}")
+        if valor_float > maximo:
+            raise ValueError(f"{nombre} debe ser ≤ {maximo}")
+        return valor_float
+    except ValueError:
+        raise ValueError(f"{nombre} debe ser número válido")
