@@ -16,34 +16,28 @@ class Modelo_descuento(ft.Container):
         # CAMPOS BÁSICOS
         self.demanda_field = ft.TextField(
             label="Demanda Anual (D)", 
-            value="1000", 
             width=200
         )
         self.costo_pedido_field = ft.TextField(
             label="Costo Pedido (S)", 
-            value="50", 
             width=200
         )
         self.costo_mantenimiento_field = ft.TextField(
             label="Costo Mantenimiento (H)", 
-            value="2", 
             width=200
         )
 
         # NIVELES DE PRECIO
         self.precio1_field = ft.TextField(
             label="Precio Nivel 1 (C1)", 
-            value="10", 
             width=200
         )
         self.precio2_field = ft.TextField(
             label="Precio Nivel 2 (C2)", 
-            value="8", 
             width=200
         )
         self.q_min_field = ft.TextField(
             label="Cantidad Mínima (Qmin)", 
-            value="100", 
             width=200
         )
 
@@ -173,7 +167,7 @@ class Modelo_descuento(ft.Container):
                 # ESPACIO FINAL
                 ft.Container(height=50)
             ],
-            scroll=ft.ScrollMode.ADAPTIVE,  # SCROLL HABILITADO
+            scroll=ft.ScrollMode.ADAPTIVE,
             expand=True
         )
 
@@ -212,10 +206,13 @@ class Modelo_descuento(ft.Container):
             self.mostrar_error(str(ve))
 
     def mostrar_error(self, mensaje):
-        self.page.show_snack_bar(ft.SnackBar(
+        """MÉTODO CORREGIDO para mostrar errores en Flet"""
+        self.page.snack_bar = ft.SnackBar(
             content=ft.Text(mensaje),
             duration=3000
-        ))
+        )
+        self.page.snack_bar.open = True
+        self.page.update()
 
     def volver_menu(self, e):
         from menu_principal import Menu_principal

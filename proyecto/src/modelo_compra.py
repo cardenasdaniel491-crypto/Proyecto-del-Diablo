@@ -16,22 +16,18 @@ class Modelo_compra(ft.Container):
         # CAMPOS DE ENTRADA
         self.demanda_field = ft.TextField(
             label="Demanda Anual (D)", 
-            value="1000", 
             width=200
         )
         self.costo_pedido_field = ft.TextField(
             label="Costo por Pedido (S)", 
-            value="50", 
             width=200
         )
         self.dias_field = ft.TextField(
             label="Días Laborales", 
-            value="365", 
             width=200
         )
         self.costo_mantenimiento_field = ft.TextField(
             label="Costo Mantenimiento (H)", 
-            value="2", 
             width=200
         )
         
@@ -39,19 +35,22 @@ class Modelo_compra(ft.Container):
         self.calcular_h_checkbox = ft.Checkbox(
             label="Calcular H automáticamente", 
             value=False,
-            on_change=self.toggle_calculo_h
+            on_change=self.toggle_calculo_h,
+            label_style=ft.TextStyle(color=ft.Colors.WHITE)
         )
         self.costo_unitario_field = ft.TextField(
             label="Costo Unitario (C)", 
-            value="10", 
             width=200, 
-            visible=False
+            visible=False,
+            color=ft.Colors.WHITE,  
+            label_style=ft.TextStyle(color=ft.Colors.WHITE)  
         )
         self.tasa_mantenimiento_field = ft.TextField(
             label="Tasa Mantenimiento (%)", 
-            value="20", 
             width=200, 
-            visible=False
+            visible=False,
+            color=ft.Colors.WHITE, 
+            label_style=ft.TextStyle(color=ft.Colors.WHITE)
         )
 
         # RESULTADOS
@@ -182,7 +181,7 @@ class Modelo_compra(ft.Container):
                 # ESPACIO FINAL PARA SCROLL
                 ft.Container(height=50)
             ],
-            scroll=ft.ScrollMode.ADAPTIVE,  # SCROLL HABILITADO
+            scroll=ft.ScrollMode.ADAPTIVE,
             expand=True
         )
 
@@ -203,10 +202,10 @@ class Modelo_compra(ft.Container):
                 H = formulario.validar_entrada(self.costo_mantenimiento_field.value, "Costo mantenimiento", 0.01)
 
             # REALIZAR CÁLCULOS
-            Q = formulario.Q(D, S, H, 0, 1)
-            d = formulario.ConvD(D, dias, 1)
-            CTA = formulario.calcular_CTA(D, Q, S, H, 1)
-            CTU = (d / Q) * S + (Q / 2) * (H / dias)
+            Q = formulario.Q(D, S, H, 0, 1)  # Modelo 1 = EOQ básico
+            d = formulario.ConvD(D, dias, 1)  # Convertir a diario
+            CTA = formulario.calcular_CTA(D, Q, S, H, 1)  # Modelo 1
+            CTU = CTA / D  # Costo total unitario
 
             # ACTUALIZAR RESULTADOS
             self.q_resultado.value = f"{Q:.2f}"
@@ -218,11 +217,13 @@ class Modelo_compra(ft.Container):
             self.mostrar_error(str(ve))
 
     def mostrar_error(self, mensaje):
-        """MUESTRA ERRORES"""
-        self.page.show_snack_bar(ft.SnackBar(
+        """MÉTODO CORREGIDO para mostrar errores en Flet"""
+        self.page.snack_bar = ft.SnackBar(
             content=ft.Text(mensaje),
             duration=3000
-        ))
+        )
+        self.page.snack_bar.open = True
+        self.page.update()
 
     def volver_menu(self, e):
         """REGRESA AL MENÚ"""

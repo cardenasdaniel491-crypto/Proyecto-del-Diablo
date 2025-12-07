@@ -16,22 +16,18 @@ class Modelo_produccion(ft.Container):
         # CAMPOS DE ENTRADA
         self.s_field = ft.TextField(
             label="Costo Preparación (S)", 
-            value="100", 
             width=200
         )
         self.d_field = ft.TextField(
             label="Demanda Anual (D)", 
-            value="1000", 
             width=200
         )
         self.h_field = ft.TextField(
             label="Costo Mantenimiento (H)", 
-            value="2", 
             width=200
         )
         self.a_field = ft.TextField(
             label="Tasa Producción (a)", 
-            value="5000", 
             width=200
         )
 
@@ -162,12 +158,12 @@ class Modelo_produccion(ft.Container):
                 # ESPACIO FINAL
                 ft.Container(height=50)
             ],
-            scroll=ft.ScrollMode.ADAPTIVE,  # SCROLL HABILITADO
+            scroll=ft.ScrollMode.ADAPTIVE,
             expand=True
         )
 
     def calcular(self, e):
-        """MÉTODO DE CÁLCULO"""
+        """MÉTODO DE CÁLCULO CORREGIDO"""
         try:
             # VALIDAR ENTRADAS
             S = formulario.validar_entrada(self.s_field.value, "Costo preparación", 0.01)
@@ -180,8 +176,8 @@ class Modelo_produccion(ft.Container):
                 raise ValueError("La tasa producción (a) debe ser mayor que la demanda (D)")
 
             # REALIZAR CÁLCULOS
-            Q = formulario.Q(D, S, H, a, 3)
-            Sm = formulario.Sm(Q, D, a, 2)
+            Q = formulario.Q(D, S, H, a, 3)  # Modelo 3 = Producción
+            Sm = formulario.Sm(Q, D, S, H, a, 2)  # Ahora pasamos todos los parámetros en orden correcto
             N = D / Q  # Número de corridas
             CTA = formulario.calcular_CTA(D, Q, S, H, 3, a=a)
 
@@ -196,10 +192,13 @@ class Modelo_produccion(ft.Container):
             self.mostrar_error(str(ve))
 
     def mostrar_error(self, mensaje):
-        self.page.show_snack_bar(ft.SnackBar(
+        """MÉTODO CORREGIDO para mostrar errores en Flet"""
+        self.page.snack_bar = ft.SnackBar(
             content=ft.Text(mensaje),
             duration=3000
-        ))
+        )
+        self.page.snack_bar.open = True
+        self.page.update()
 
     def volver_menu(self, e):
         from menu_principal import Menu_principal

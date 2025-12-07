@@ -17,32 +17,26 @@ class Modelo_probabilistico(ft.Container):
         # CAMPOS DE ENTRADA
         self.demanda_field = ft.TextField(
             label="Demanda Promedio (μ)", 
-            value="1000", 
             width=200
         )
         self.varianza_field = ft.TextField(
             label="Varianza (σ²)", 
-            value="10000", 
             width=200
         )
         self.z_field = ft.TextField(
             label="Valor Z", 
-            value="1.65", 
             width=200
         )
         self.costo_pedido_field = ft.TextField(
             label="Costo Pedido (S)", 
-            value="50", 
             width=200
         )
         self.costo_mantenimiento_field = ft.TextField(
             label="Costo Mantenimiento (H)", 
-            value="2", 
             width=200
         )
         self.lead_time_field = ft.TextField(
             label="Tiempo Entrega (L) días", 
-            value="7", 
             width=200
         )
 
@@ -178,7 +172,7 @@ class Modelo_probabilistico(ft.Container):
                 # ESPACIO FINAL
                 ft.Container(height=50)
             ],
-            scroll=ft.ScrollMode.ADAPTIVE,  # SCROLL HABILITADO
+            scroll=ft.ScrollMode.ADAPTIVE,
             expand=True
         )
 
@@ -194,11 +188,12 @@ class Modelo_probabilistico(ft.Container):
             L = formulario.validar_entrada(self.lead_time_field.value, "Tiempo entrega", 0.1)
 
             # REALIZAR CÁLCULOS
-            Q = formulario.Q(D, S, H, 0, 1)
+            Q = formulario.Q(D, S, H, 0, 1)  # Modelo 1 = EOQ básico
             
             # Calcular punto de reorden con stock seguridad
-            demanda_lead_time = (D / 365) * L
-            desviacion = math.sqrt(varianza * L / 365)
+            demanda_promedio_diaria = D / 365
+            demanda_lead_time = demanda_promedio_diaria * L
+            desviacion = math.sqrt(varianza * L / 365)  # Varianza por día
             stock_seguridad = Z * desviacion
             PR = demanda_lead_time + stock_seguridad
 
@@ -212,10 +207,13 @@ class Modelo_probabilistico(ft.Container):
             self.mostrar_error(str(ve))
 
     def mostrar_error(self, mensaje):
-        self.page.show_snack_bar(ft.SnackBar(
+        """MÉTODO CORREGIDO para mostrar errores en Flet"""
+        self.page.snack_bar = ft.SnackBar(
             content=ft.Text(mensaje),
             duration=3000
-        ))
+        )
+        self.page.snack_bar.open = True
+        self.page.update()
 
     def volver_menu(self, e):
         from menu_principal import Menu_principal

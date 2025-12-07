@@ -16,22 +16,18 @@ class Modelo_escases(ft.Container):
         # CAMPOS DE ENTRADA
         self.demanda_field = ft.TextField(
             label="Demanda Anual (D)", 
-            value="1000", 
             width=200
         )
         self.costo_pedido_field = ft.TextField(
             label="Costo Pedido (S)", 
-            value="50", 
             width=200
         )
         self.costo_mantenimiento_field = ft.TextField(
             label="Costo Mantenimiento (H)", 
-            value="2", 
             width=200
         )
         self.costo_escasez_field = ft.TextField(
             label="Costo Escasez (Ca)", 
-            value="5", 
             width=200
         )
 
@@ -155,12 +151,12 @@ class Modelo_escases(ft.Container):
                 # ESPACIO FINAL
                 ft.Container(height=50)
             ],
-            scroll=ft.ScrollMode.ADAPTIVE,  # SCROLL HABILITADO
+            scroll=ft.ScrollMode.ADAPTIVE,
             expand=True
         )
 
     def calcular(self, e):
-        """MÉTODO DE CÁLCULO"""
+        """MÉTODO DE CÁLCULO CORREGIDO"""
         try:
             # VALIDAR ENTRADAS
             D = formulario.validar_entrada(self.demanda_field.value, "Demanda", 1)
@@ -169,9 +165,9 @@ class Modelo_escases(ft.Container):
             Ca = formulario.validar_entrada(self.costo_escasez_field.value, "Costo escasez", 0.01)
 
             # REALIZAR CÁLCULOS
-            Q = formulario.Q(D, S, H, Ca, 2)
-            Sm = formulario.Sm(Q, D, Ca, 1)
-            CTA = (D / Q) * S + H * (Sm / 2)
+            Q = formulario.Q(D, S, H, Ca, 2)  # Modelo 2 = Con escasez
+            Sm = formulario.Sm(Q, D, S, H, Ca, 1)  # Ahora pasamos todos los parámetros en orden correcto
+            CTA = formulario.calcular_CTA(D, Q, S, H, 2, a=Ca, Sm_val=Sm)
 
             # ACTUALIZAR RESULTADOS
             self.q_result.value = f"{Q:.2f}"
@@ -183,10 +179,13 @@ class Modelo_escases(ft.Container):
             self.mostrar_error(str(ve))
 
     def mostrar_error(self, mensaje):
-        self.page.show_snack_bar(ft.SnackBar(
+        """MÉTODO CORREGIDO para mostrar errores en Flet"""
+        self.page.snack_bar = ft.SnackBar(
             content=ft.Text(mensaje),
             duration=3000
-        ))
+        )
+        self.page.snack_bar.open = True
+        self.page.update()
 
     def volver_menu(self, e):
         from menu_principal import Menu_principal
